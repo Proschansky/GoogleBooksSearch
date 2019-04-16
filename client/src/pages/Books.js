@@ -1,57 +1,42 @@
 import React, { Component } from "react";
-import DeleteBtn from "../components/DeleteBtn";
+// import DeleteBtn from "../components/DeleteBtn";
 import Jumbotron from "../components/Jumbotron";
-import API from "../utils/API";
-import { Link } from "react-router-dom";
+// import API from "../utils/API";
+// import { Link } from "react-router-dom";
 import { Col, Row, Container } from "../components/Grid";
 import { List, ListItem } from "../components/List";
 import { Input, TextArea, FormBtn } from "../components/Form";
 
 class Books extends Component {
   state = {
-    books: [],
-    title: "",
-    author: "",
-    synopsis: ""
+    query: '',
+    books: {}
   };
 
-  componentDidMount() {
-    this.loadBooks();
+  constructor(props){
+    super(props);
+    this.handleFormSubmit = this.handleFormSubmit.bind(this)
   }
 
-  loadBooks = () => {
-    API.getBooks()
-      .then(res =>
-        this.setState({ books: res.data, title: "", author: "", synopsis: "" })
-      )
-      .catch(err => console.log(err));
-  };
-
-  deleteBook = id => {
-    API.deleteBook(id)
-      .then(res => this.loadBooks())
-      .catch(err => console.log(err));
-  };
-
   handleInputChange = event => {
-    const { name, value } = event.target;
+    let value = event.target.value;
+    
     this.setState({
-      [name]: value
+      query: value
     });
+    console.log(this.state.query)
   };
 
-  handleFormSubmit = event => {
+  handleFormSubmit = async (event )=>{
     event.preventDefault();
-    if (this.state.title && this.state.author) {
-      API.saveBook({
-        title: this.state.title,
-        author: this.state.author,
-        synopsis: this.state.synopsis
-      })
-        .then(res => this.loadBooks())
-        .catch(err => console.log(err));
-    }
-  };
+    const query = this.state.query;
+    const URL = "https://www.googleapis.com/books/v1/volumes?q="+ query;
+
+    await fetch(URL, { method: 'GET'})
+      .then(response => console.log(response.json()))
+      .catch(err => console.log(err))
+  }
+
 
   render() {
     const books = this.state.books;
@@ -76,21 +61,22 @@ class Books extends Component {
               <br></br>
               <h3>Book</h3>
               <Input
-                value={this.state.title}
+                value={this.state.query}
                 onChange={this.handleInputChange}
                 name="Book"
                 placeholder="Search for a Book!"
               />
               <FormBtn
-                disabled={!(this.state.author && this.state.title)}
-                onClick={this.handleFormSubmit}
+                onClick={()=>this.handleFormSubmit()}
               >
                 Submit Book
               </FormBtn>
             </form>
           </Col>
         </Row>
-        < Booklist />
+          <>
+            {Booklist}
+          </>
       </Container>
              
      )
